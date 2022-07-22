@@ -6,3 +6,6 @@
   branch = "0.1.2"
 	path = lib/prb-test
 	url = https://github.com/paulrberg/prb-test
+[submodule "lib/huffmate"]
+	path = lib/huffmate
+	url = https://github.com/pentagonxyz/huffmate
