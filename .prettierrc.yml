@@ -11,3 +11,4 @@ overrides:
     options:
       compiler: "0.8.15"
       tabWidth: 4
+      printWidth: 250
