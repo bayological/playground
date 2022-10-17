@@ -20,9 +20,6 @@ contract BuyStable {
     }
 
     function BuyStableWithCelo(uint256 amountOfCeloToSell) external {
-        // Approve spend
-        celoToken.approve(msg.sender, amountOfCeloToSell);
-
         // Transfer Celo to contract
         celoToken.transferFrom(msg.sender, address(this), amountOfCeloToSell);
 
