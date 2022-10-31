@@ -1,0 +1,15 @@
+name: Check linked issue
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  check_pull_requests:
+    runs-on: ubuntu-latest
+    name: Check linked issues
+    steps:
+      - uses: nearform/github-action-check-linked-issues@v1
+        id: check-linked-issues
+        with:
+          exclude-branches: "release/**, dependabot/**"
