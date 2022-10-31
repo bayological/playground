@@ -1,8 +1,8 @@
 name: Check linked issue
 
 on:
-  pull_request_target:
-    types: [opened, edited, reopened, synchronize]
+  pull_request:
+    branches: [main, develop]
 
 jobs:
   check_pull_requests:
