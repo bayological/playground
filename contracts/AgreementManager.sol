@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Unlicensed
+// SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.15;
 
 import { Ownable } from "oz-contracts/access/Ownable.sol";
@@ -43,8 +43,8 @@ contract AgreementManager is IAgreementManager, Ownable {
                             Constructor
     //////////////////////////////////////////////////////////////*/
 
-  constructor(address[] memory _paymentTokens) {
-    addPaymentTokens(_paymentTokens);
+  constructor(address[] memory paymentTokens) {
+    addPaymentTokens(paymentTokens);
   }
 
   /*//////////////////////////////////////////////////////////////
@@ -53,18 +53,35 @@ contract AgreementManager is IAgreementManager, Ownable {
 
   /*********************** Payment Tokens ***********************/
 
-  function addPaymentTokens(address[] memory _paymentTokens) public onlyOwner {
-    for (uint256 i = 0; i < _paymentTokens.length; i++) {
-      isPaymentToken[_paymentTokens[i]] = true;
+  /**
+   * @notice Adds the specified payment tokens to the list of accepted payment tokens.
+   * @param paymentTokens The payment tokens to add.
+   */
+  function addPaymentTokens(address[] memory paymentTokens) public onlyOwner {
+    for (uint256 i = 0; i < paymentTokens.length; i++) {
+      isPaymentToken[paymentTokens[i]] = true;
     }
   }
 
-  function removePaymentToken(address _paymentToken) public onlyOwner {
-    isPaymentToken[_paymentToken] = false;
+  /**
+   * @notice Removes the specified payment token from the list of accepted payment tokens.
+   * @param paymentToken The payment token to remove.
+   */
+  function removePaymentToken(address paymentToken) public onlyOwner {
+    isPaymentToken[paymentToken] = false;
   }
 
   /*********************** Agreements ***********************/
 
+  /**
+   * @notice Creates an agreement with the specified details.
+   * @param paymentToken The token to be used for payment.
+   * @param paymentAmount The amount of payment token required.
+   * @param deadline The deadline for the completion of the service.
+   * @param offeree Address of the indended offeree.
+   *
+   * @return agreementId The ID of the newly created agreement.
+   */
   function createAgreement(
     address paymentToken,
     uint256 paymentAmount,
