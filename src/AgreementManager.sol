@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Unlicensed
 pragma solidity 0.8.15;
 
+import { Ownable } from "oz-contracts/access/Ownable.sol";
 import { IAgreementManager } from "./interfaces/IAgreementManager.sol";
 
 /**
@@ -13,32 +14,80 @@ import { IAgreementManager } from "./interfaces/IAgreementManager.sol";
  *          If they accept, their signature is added to the agreement, the requested amount
  *          is deducted and transfered to the chescrow contract along with the Agreement.
  */
-contract AgreementManager is IAgreementManager {
-    mapping(uint256 => Agreement) agreements;
-    uint256 private nextId = 0;
+contract AgreementManager is IAgreementManager, Ownable {
+  enum AgreementStatus {
+    DRAFT,
+    NEGOTIATION,
+    ACCEPTED,
+    EXECUTION,
+    FULFILLED,
+    BREACH,
+    DISPUTE,
+    CLOSED
+  }
 
-    function createAgreement(
-        address paymentToken,
-        uint256 paymentAmount,
-        uint256 deadline,
-        address offeree
-    ) external returns (uint256 agreementId) {
-        if (block.timestamp >= deadline) revert DeadlineMustBeInFuture();
-        if (paymentAmount == 0) revert PaymentIsZero();
-        if (offeree == msg.sender) revert OffereeIsOfferor();
+  /*//////////////////////////////////////////////////////////////
+                            State Variables
+    //////////////////////////////////////////////////////////////*/
 
-        Agreement memory newAgreement;
+  // Maps an agreement ID to an agreement struct
+  mapping(uint256 => Agreement) public agreements;
 
-        newAgreement.deadline = deadline;
-        newAgreement.paymentToken = paymentToken;
-        newAgreement.paymentAmount = paymentAmount;
-        newAgreement.offeree = offeree;
-        newAgreement.offeror = msg.sender;
+  // Maps a token address to a boolean indicating if it is an allowed payment token
+  mapping(address => bool) public isPaymentToken;
 
-        agreementId = nextId;
+  // The next agreement ID to be used
+  uint256 private nextId = 0;
 
-        agreements[agreementId] = newAgreement;
+  /*//////////////////////////////////////////////////////////////
+                            Constructor
+    //////////////////////////////////////////////////////////////*/
 
-        nextId++;
+  constructor(address[] memory _paymentTokens) {
+    addPaymentTokens(_paymentTokens);
+  }
+
+  /*//////////////////////////////////////////////////////////////
+                            Mutative Functions
+    //////////////////////////////////////////////////////////////*/
+
+  /*********************** Payment Tokens ***********************/
+
+  function addPaymentTokens(address[] memory _paymentTokens) public onlyOwner {
+    for (uint256 i = 0; i < _paymentTokens.length; i++) {
+      isPaymentToken[_paymentTokens[i]] = true;
     }
+  }
+
+  function removePaymentToken(address _paymentToken) public onlyOwner {
+    isPaymentToken[_paymentToken] = false;
+  }
+
+  /*********************** Agreements ***********************/
+
+  function createAgreement(
+    address paymentToken,
+    uint256 paymentAmount,
+    uint256 deadline,
+    address offeree
+  ) external returns (uint256 agreementId) {
+    if (!isPaymentToken[paymentToken]) revert PaymentTokenNotAccepted();
+    if (paymentAmount == 0) revert PaymentAmountCannotBeZero();
+    if (offeree == msg.sender) revert OffereeCannotBeOfferor();
+    if (block.timestamp >= deadline) revert DeadlineMustBeInFuture();
+
+    Agreement memory newAgreement;
+
+    newAgreement.deadline = deadline;
+    newAgreement.paymentToken = paymentToken;
+    newAgreement.paymentAmount = paymentAmount;
+    newAgreement.offeree = offeree;
+    newAgreement.offeror = msg.sender;
+
+    agreementId = nextId;
+
+    agreements[agreementId] = newAgreement;
+
+    nextId++;
+  }
 }

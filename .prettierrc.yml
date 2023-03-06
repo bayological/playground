@@ -10,5 +10,5 @@ overrides:
   - files: ["*.sol"]
     options:
       compiler: "0.8.15"
-      tabWidth: 4
-      printWidth: 250
+      tabWidth: 2
+      printWidth: 120
